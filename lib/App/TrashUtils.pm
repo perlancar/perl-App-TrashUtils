@@ -12,6 +12,18 @@ use Log::ger;
 
 our %SPEC;
 
+sub _complete_trashed_filenames {
+    require Complete::Util;
+    require File::Trash::FreeDesktop;
+
+    my %args = @_;
+
+    my $trash = File::Trash::FreeDesktop->new;
+    my @ct = $trash->list_contents;
+
+    Complete::Util::complete_array_elem(array=>[map { my $filename = $_->{path}; $filename =~ s!.+/!!; $filename } @ct], word=>$args{word});
+}
+
 $SPEC{trash_list} = {
     v => 1.1,
     summary => 'List contents of trash directories',
@@ -34,6 +46,7 @@ being interpreted by the shell, e.g. to match files in the current directory.
 _
             schema => 'str*',
             pos => 0,
+            completion => \&_complete_trashed_filenames,
         },
     },
     examples => [
@@ -164,6 +177,7 @@ $SPEC{trash_rm} = {
             req => 1,
             pos => 0,
             slurpy => 1,
+            element_completion => \&_complete_trashed_filenames,
         },
         no_wildcard => {
             schema => 'true*',
@@ -237,6 +251,7 @@ $SPEC{trash_restore} = {
             req => 1,
             pos => 0,
             slurpy => 1,
+            element_completion => \&_complete_trashed_filenames,
         },
         no_wildcard => {
             schema => 'true*',
