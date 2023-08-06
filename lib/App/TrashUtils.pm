@@ -17,11 +17,18 @@ sub _complete_trashed_filenames {
     require File::Trash::FreeDesktop;
 
     my %args = @_;
+    my $word = $args{word} // '';
 
     my $trash = File::Trash::FreeDesktop->new;
     my @ct = $trash->list_contents;
 
-    Complete::Util::complete_array_elem(array=>[map { my $filename = $_->{path}; $filename =~ s!.+/!!; $filename } @ct], word=>$args{word});
+    if ($word =~ m!/!) {
+        # if word contains '/', then we complete with trashed files' paths
+        Complete::Util::complete_array_elem(array=>[map { $_->{path} } @ct], word=>$word);
+    } else {
+        # otherwise we complete with trashed files' filenames
+        Complete::Util::complete_array_elem(array=>[map { my $filename = $_->{path}; $filename =~ s!.+/!!; $filename } @ct], word=>$word);
+    }
 }
 
 $SPEC{trash_list} = {
