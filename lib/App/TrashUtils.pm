@@ -106,6 +106,9 @@ $SPEC{trash_list_trashes} = {
     v => 1.1,
     summary => 'List trash directories',
     args => {
+        home_only => {
+            schema => 'bool*',
+        },
     },
 };
 sub trash_list_trashes {
@@ -113,7 +116,9 @@ sub trash_list_trashes {
 
     my %args = @_;
 
-    my @trashes = File::Trash::FreeDesktop->new->list_trashes;
+    my @trashes = File::Trash::FreeDesktop->new(
+        home_only => $args{home_only},
+    )->list_trashes;
     [200, "OK", \@trashes];
 }
 
